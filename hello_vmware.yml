@@ -1,0 +1,9 @@
+---
+
+- name: CSV File Sample
+  hosts: all
+  vars:
+   csv_bash_path: "/var/lib/itam/dailycheck"
+   csv_temp_path: "/tmp/itam/dailycheck"
+  roles:
+    - role: vmware

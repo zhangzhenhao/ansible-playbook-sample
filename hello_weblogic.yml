@@ -1,0 +1,96 @@
+- name: CSV File Sample
+  hosts: all
+  vars:
+   csv_bash_path: "/var/lib/itam/dailycheck"
+   csv_temp_path: "/tmp/itam/dailycheck"
+  tasks:
+    - name: Hello weblogic and CSV
+      debug:
+        msg: "Hello webloigic!"
+
+    - name: create directory for csv
+      file:
+        path: "{{ csv_temp_path }}/{{ awx_job_id }}"
+        state: directory
+
+    - name: create csv file for test
+      file:
+        path: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv"
+        state: touch
+
+    - name: create some test data
+      shell: |
+        cat > "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv" << EOF
+          app_name, hostname,ipaddr, instance, check_item, result
+          SRS PROD,cnsd11lvpap004,10.224.146.47,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          SRS PROD,cnsd11lvpap004,10.224.146.47,WLS_REPORTS,Current state of "WLS_FORMS" , RUNNING
+          
+          
+          SRS UAT,cnsd11lvpap004,10.224.146.47,WLS_REPORTS,Current state of "WLS_REPORTS" , RUNNING
+          
+          
+          SRS UAT,cnsd11lvpap005,10.224.146.48,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Lewtan PROD,cnsd11lvpap005,10.224.146.48,srsapo001,Current state of "srsapo001" , RUNNING
+          
+          
+          Lewtan PROD,cnsd11lvpap006,10.224.146.49,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Lewtan UAT,cnsd11lvpap006,10.224.146.49,srsapo001,Current state of "srsapo001" , RUNNING
+          
+          
+          Lewtan UAT,cnsd11lvpap007,10.224.146.50,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image PROD,cnsd11lvpap007,10.224.146.50,srsapo002,Current state of "srsapo002" , RUNNING
+          
+          
+          Image PROD,cnsd11lvpap008,10.224.146.51,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image UAT,cnsd11lvpap008,10.224.146.51,srsapo002,Current state of "srsapo002" , RUNNING
+          
+          
+          Image UAT,cnsd21lvmap004,10.225.146.52,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image UAT,cnsd21lvmap004,10.225.146.52,WLS_FORMS,Current state of "WLS_FORMS" , RUNNING
+          
+          
+          Image UAT,cnsd21lvmap004,10.225.146.52,WLS_REPORTS,Current state of "WLS_REPORTS" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap005,10.225.146.53,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap005,10.225.146.53,srsapo001,Current state of "srsapo001" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap006,10.225.146.54,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap006,10.225.146.54,srsapo001,Current state of "srsapo001" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap007,10.225.146.55,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap007,10.225.146.55,srsapo002,Current state of "srsapo002" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap008,10.225.146.56,AdminServer,Current state of "AdminServer" , RUNNING
+          
+          
+          Image DR,cnsd21lvmap008,10.225.146.56,srsapo002,Current state of "srsapo002" , RUNNING
+          
+          
+    - name: copy csv file back
+      fetch:
+        src: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv"
+        dest: "{{ csv_bash_path }}/{{ awx_job_id }}/"
+        fail_on_missing: yes
+        flat: yes

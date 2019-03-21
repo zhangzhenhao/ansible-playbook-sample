@@ -1,0 +1,189 @@
+- name: CSV File Sample
+  hosts: all
+  vars:
+   csv_bash_path: "/var/lib/itam/baselinecheck"
+   csv_temp_path: "/tmp/itam/baselinecheck"
+  tasks:
+    - name: Hello AWX and CSV
+      debug:
+        msg: "Hello CSV!"
+
+    - name: create directory for csv
+      file:
+        path: "{{ csv_temp_path }}/{{ awx_job_id }}"
+        state: directory
+
+    - name: create csv file for test
+      file:
+        path: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv"
+        state: touch
+
+    - name: create some test data
+      shell: |
+        cat > "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv" << EOF
+          Num,Check Item,Audit Value,Configuration Value,Result,Severity
+          2.1.1,Ensure_mounting_of_cramfs_filesystems_is_disabled,no_output,Filesystem:cramfs module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_freevxfs_filesystems_is_disabled,no_output,Filesystem:freevxfs module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_jffs2_filesystems_is_disabled,no_output,Filesystem:jffs2 module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_hfs_filesystems_is_disabled,no_output,Filesystem:hfs module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_hfsplus_filesystems_is_disabled,no_output,Filesystem:hfsplus module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_squashfs_filesystems_is_disabled,no_output,Filesystem:squashfs module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_udf_filesystems_is_disabled,no_output,Filesystem:udf module is loaded,Not Compliance,Medium
+          2.1.1,Ensure_mounting_of_FAT_filesystems_is_disabled,no_output,Filesystem:vfat module is loaded,Not Compliance,Medium
+          2.1.3,Ensure_nodev_option_set_on_/tmp_partition,nodev_option_is_set_on_/tmp,nodev Option is not set,Not Compliance,High
+          2.1.4,Ensure_nosuid_option_set_on_/tmp_partition,nosuid_option_is_set_on_/tmp,nosuid Option is not set,Not Compliance,High
+          2.1.5,Ensure_noexec_option_set_on_/tmp_partition,noexec_option_is_set_on_/tmp,noexec Option is not set,Not Compliance,High
+          2.1.6,Ensure separate partition exists for /var,mount | grep /var,Found /var separate partition,Compliance,High
+          2.1.7,Ensure separate partition exists for /var/tmp,mount | grep /var/tmp,No /var/tmp separate partition be mounted,Not Compliance,High
+          2.1.8,Ensure_nodev_option_set_on_/var/tmp_partition,nodev_option_is_set_on_/var/tmp,No /var/tmp separate partition be mounted,Not Compliance,High
+          2.1.9,Ensure_nosuid_option_set_on_/var/tmp_partition,nosuid_option_is_set_on_/var/tmp,No /var/tmp separate partition be mounted,Not Compliance,High
+          2.1.10,Ensure_noexec_option_set_on_/var/tmp_partition,noexec_option_is_set_on_/var/tmp,No /var/tmp separate partition be mounted,Not Compliance,High
+          2.1.11,Ensure separate partition exists for /var/log,mount | grep /var/log,Found /var/log separate partition,Compliance,High
+          2.1.12,Ensure separate partition exists for /var/log/audit,mount | grep /var/log/audit,Found /var/log/audit separate partition,Compliance,High
+          2.1.13,Ensure separate partition exists for /home,mount | grep /home,Found /home separate partition,Compliance,High
+          2.1.14,Ensure_nodev_option_set_on_/home_partition,nodev_option_is_set_on_/home,nodev Option is not set,Not Compliance,High
+          2.1.15,Ensure_nodev_option_set_on_/dev/shm_partition,nodev_option_is_set_on_/dev/shm,nodev Option is not set,Not Compliance,High
+          2.1.16,Ensure_nosuid_option_set_on_/dev/shm_partition,nosuid_option_is_set_on_/dev/shm,nosuid Option is not set,Not Compliance,High
+          2.1.17,Ensure_noexec_option_set_on_/dev/shm_partition,noexec_option_is_set_on_/dev/shm,noexec Option is not set,Not Compliance,High
+          2.1.22,Disable Automounting,autofs 0:off 1:off 2:off 3:off 4:off 5:off 6:off,error reading information on service autofs: No such file or directory,Compliance,High
+          2.2.1,Ensure package manager repositories are configured,Configure your package manager repositories according to site policy,NA,Not Required in Baseline Document,High
+          2.2.2,Ensure gpgcheck is globally activated,verify that all instances of gpgcheck returned are set to '1',NA,Not Required in Baseline Document,High
+          2.2.3,Ensure GPG keys are configured,verify GPG keys are configured correctly,NA,Not Required in Baseline Document,High
+          2.2.4,Ensure Red Hat Network or Subscription Manager connection is configured,Verify your system is connected to the Red Hat Network or Red Hat Subscription Manager,NA,Not Required in Baseline Document,High
+          2.2.5,Disable the rhnsd Daemon,rhnsd 0:off 1:off 2:off 3:off 4:off 5:off 6:off,"rhnsd           0:off   1:off   2:off   3:off   4:off   5:off   6:off",Compliance,High
+          2.3.1,Ensure AIDE is installed,rpm -q aide||aide-version,aide-0.14-3.el6_2.2.x86_64,Compliance,High
+          2.3.2,Ensure filesystem integrity is regularly checked,AIDE crontask should be setup,Crontask:aide is not setup,Not Compliance,High
+          2.4.1,Ensure permissions on bootloader config are configured,Access:(0600/-rw-------)Uid:( 0/ root)Gid:( 0/ root),-rw-------. 1 root root 2122 Nov 18 08:19 /boot/grub/grub.conf,Compliance,High
+          2.4.3,Ensure authentication required for single user mode,/etc/sysconfig/init|set SINGLE to /sbin/sulogin,SINGLE=/sbin/sulogin,Compliance,High
+          2.4.4,Ensure interactive boot is not enabled,PROMPT is set to 'no' in /etc/sysconfig/init,PROMPT=yes,Not Compliance,High
+          2.5.1,Ensure core dumps are restricted,Add '* hard core 0' to /etc/security/limits.conf&&setup sysctl.conf file--fs.suid_dumpable = 0,'hard core' is not add or sysctl -w fs.suid_dumpable=0 is not execution,Not Compliance,High
+          2.5.2,Ensure XD/NX support is enabled,verify your kernel has identified and activated NX/XD protection,NA,Not Required in Baseline Document,High
+          2.5.3,Ensure address space layout randomization (ASLR) is enabled,kernel.randomize_va_space = 2,kernel.randomize_va_space = 2,Compliance,High
+          2.5.4,Ensure prelink is disabled,'rpm -q prelink'-->package prelink is not installed,prelink-0.4.6-3.1.el6_4.x86_64,Not Compliance,High
+          2.6.1,Ensure SELinux is not disabled in bootloader configuration,no kernel line has the selinux=0 or enforcing=0 parameters set, kernel /vmlinuz-2.6.32-696.13.2.el6.x86_64 ro root=/dev/mapper/vg00-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto kernel /vmlinuz-2.6.32-696.6.3.el6.x86_64 ro root=/dev/mapper/vg00-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto kernel /vmlinuz-2.6.32-696.3.2.el6.x86_64 ro root=/dev/mapper/vg00-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto kernel /altvmlinuz-2.6.32-431.17.1.el6.x86_64 ro root=/dev/mapper/vg00alt-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00alt/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto,Compliance,High
+          2.6.1,Ensure the SELinux state is enforcing,SELinux status: enabled && Current mode: enforcing && Mode from config file: enforcing,SELinux status: enabled SELinuxfs mount: /selinux Current mode: permissive Mode from config file: permissive Policy version: 24 Policy from config file: targeted,Not Compliance,High
+          2.6.1,Ensure SELinux policy is configured,Policy from config file: targeted,Policy from config file: targeted,Compliance,High
+          2.6.1,Ensure SETroubleshoot is not installed,'rpm -q setroubleshoot'-->package setroubleshoot is not installed,setroubleshoot is not installed,Compliance,High
+          2.6.1,Ensure the MCS Translation Service (mcstrans) is not installed,rpm -q mcstrans'-->package mcstrans is not installed,mcstrans is not installed,Compliance,High
+          2.6.2,Ensure SELinux is installed,rpm -q libselinux --> libselinux-version,libselinux-2.0.94-7.el6.x86_64 libselinux-2.0.94-7.el6.i686,Compliance,High
+          2.7.1,Ensure message of the day is configured properly,Run 'egrep '(\v|\r|\m|\s)' /etc/motd' and no results are returned,No results returned,Compliance,High
+          2.7.1,Ensure local login warning banner is configured properly,Run 'egrep '(\v|\r|\m|\s)' /etc/issue' and no results are returned,No results returned,Compliance,High
+          2.7.1,Ensure remote login warning banner is configured properly,Run 'egrep '(\v|\r|\m|\s)' /etc/issue.net' and no results are returned,No results returned,Compliance,High
+          2.7.1,Ensure permissions on /etc/motd are configured,stat /etc/motd --> Access:(0644/-rw-r--r--) Uid:( 0/ root) Gid:( 0/ root),-rw-r--r--. 1 root root 865 Dec 2 2014 /etc/motd,Compliance,High
+          2.7.1,Ensure permissions on /etc/issue are configured,stat /etc/issue --> Access:(0644/-rw-r--r--) Uid:( 0/ root) Gid:( 0/ root),-rw-r--r--. 1 root root 865 Dec 2 2014 /etc/issue,Compliance,High
+          2.7.1,Ensure permissions on /etc/issue.net are configured,stat /etc/issue.net --> Access:(0644/-rw-r--r--) Uid:( 0/ root) Gid:( 0/ root),-rw-r--r--. 1 root root 865 Dec 2 2014 /etc/issue.net,Compliance,High
+          2.8,Ensure updates patches and additional security software are installed,verify there are no updates or patches to install,NA,Not Required in Baseline Document,High
+          3.1,Ensure chargen services are not enabled,xinetd based services:chargen-dgram: off chargen-stream: off or missed,chargen-dgram off chargen-stream off,Compliance,High
+          3.1,Ensure daytime services are not enabled,xinetd based services:daytime-dgram: off daytime-stream: off or missed,daytime-dgram off daytime-stream off,Compliance,High
+          3.1,Ensure discard services are not enabled,xinetd based services:discard-dgram: off discard-stream: off or missed,discard-dgram off discard-stream off,Compliance,High
+          3.1,Ensure 'echo' services are not enabled,xinetd based services:'echo-dgram': off 'echo-stream': off or missed,echo-dgram off echo-stream off,Compliance,High
+          3.1,Ensure time services are not enabled,xinetd based services:'time-dgram': off 'time-stream': off or missed,time-dgram off time-stream off,Compliance,High
+          3.1,Ensure rsh server are not enabled,xinetd based services:'rexec': off 'rlogin': off or missed,error reading information on service rexec: No such file or directory error reading information on service rlogin: No such file or directory,Compliance,High
+          3.1,Ensure talk server are not enabled,xinetd based services:'talk': off or missed,error reading information on service talk: No such file or directory,Compliance,High
+          3.1,Ensure telnet server are not enabled,xinetd based services:'telnet': off or missed,error reading information on service telnet: No such file or directory,Compliance,High
+          3.1,Ensure tftp server are not enabled,xinetd based services:'tftp': off or missed,error reading information on service tftp: No such file or directory,Compliance,High
+          3.1,Ensure rsync serice are not enabled,xinetd based services:'rsync': off or missed,rsync off,Compliance,High
+          3.1,Ensure xinetd is not enabled,verify all runlevels are listed as off or xinetd is not available,xinetd 0:off 1:off 2:off 3:on 4:on 5:on 6:off,Not Compliance,High
+          3.2.2,Ensure X Window System is not installed,rpm -qa xorg-x11* --> No output is returned,package xorg-x11* is not installed,Compliance,High
+          3.2.3,Ensure Avahi is not enabled,verify all runlevels are listed as off or avahi-daemon is not available,error reading information on service avahi-daemon: No such file or directory,Compliance,High
+          3.2.4,Ensure CUPS is not enabled,verify all runlevels are listed as off or cups is not available,cups 0:off 1:off 2:off 3:off 4:off 5:off 6:off,Compliance,High
+          3.2.5,Ensure DHCP is not enabled,verify all runlevels are listed as off or dhcpd is not available,error reading information on service dhcpd: No such file or directory,Compliance,High
+          3.2.6,Ensure LDAP is not enabled,verify all runlevels are listed as off or slapd is not available,error reading information on service slapd: No such file or directory,Compliance,High
+          3.2.7,Ensure NFS and RPC is not enabled,verify NFS & RPC runlevels are listed as off or nfs is not available,nfs 0:off 1:off 2:off 3:off 4:off 5:off 6:off rpcbind 0:off 1:off 2:on 3:on 4:on 5:on 6:off,Not Compliance,High
+          3.2.7,Ensure DNS Server is not enabled,verify all runlevels are listed as off or named is not available,error reading information on service named: No such file or directory,Compliance,High
+          3.2.8,Ensure FTP Server is not enabled,verify all runlevels are listed as off or vsftpd is not available,error reading information on service vsftpd: No such file or directory,Compliance,High
+          3.2.9,Ensure HTTP Server is not enabled,verify all runlevels are listed as off or httpd is not available,error reading information on service httpd: No such file or directory,Compliance,High
+          3.2.10,Ensure IMAP and POP3 Server is not enabled,verify all runlevels are listed as off or dovecot is not available,error reading information on service dovecot: No such file or directory,Compliance,High
+          3.2.11,Ensure Samba is not enabled,"verify all runlevels are listed as ""off"" or smb is not available",NA,Not Required in Baseline Document,High
+          3.2.12,Ensure HTTP Proxy Server is not enabled,verify all runlevels are listed as off or squid is not available,error reading information on service squid: No such file or directory,Compliance,High
+          3.2.13,Ensure SNMP Server is not enabled,"verify all runlevels are listed as ""off"" or snmpd is not available",NA,Not Required in Baseline Document,High
+          3.2.15,Ensure NIS Server is not enabled,verify all runlevels are listed as off or ypserv is not available,error reading information on service ypserv: No such file or directory,Compliance,High
+          3.3.1,Ensure NIS Client is not installed,RUN rpm -q ypbind --> verify ypbind is not installed,package ypbind is not installed,Compliance,High
+          3.3.2,Ensure RSH Client is not installed,RUN rpm -q rsh --> verify rsh is not installed,package rsh is not installed,Compliance,High
+          3.3.3,Ensure Talk Client is not installed,RUN rpm -q talk --> verify talk is not installed,package talk is not installed,Compliance,High
+          3.3.4,Ensure Telnet Client is not installed,RUN rpm -q telnet --> verify telnet is not installed,telnet-0.17-47.el6_3.1.x86_64,Not Compliance,High
+          3.3.5,Ensure LDAP Client is not installed,RUN rpm -q openldap-clients --> verify openldap-clients is not installed,package openldap-clients is not installed,Compliance,High
+          4.1.1,Ensure IP forwarding is disabled,Run sysctl net.ipv4.ip_forward --> Verify value is '0',net.ipv4.ip_forward = 0,Compliance,High
+          4.1.2,Ensure packet redirect sending is disabled,Run sysctl net.ipv4.conf.all.send_redirects|net.ipv4.conf.default.send_redirects --> Verify value is '0',net.ipv4.conf.all.send_redirects = 1 net.ipv4.conf.default.send_redirects = 1,Not Compliance,High
+          4.2.1,Ensure source routed packets are not accepted,Run sysctl net.ipv4.conf.all.accept_source_route|net.ipv4.conf.default.accept_source_route --> Verify value is '0',net.ipv4.conf.all.accept_source_route = 0 net.ipv4.conf.default.accept_source_route = 0,Compliance,High
+          4.2.2,Ensure ICMP redirects are not accepted,Run sysctl net.ipv4.conf.all.accept_redirects|net.ipv4.conf.default.accept_redirects --> Verify value is '0',net.ipv4.conf.all.accept_redirects = 1 net.ipv4.conf.default.accept_redirects = 1,Not Compliance,High
+          4.2.3,Ensure secure ICMP redirects are not accepted,Run sysctl net.ipv4.conf.all.secure_redirects|net.ipv4.conf.default.secure_redirects --> Verify value is '0',net.ipv4.conf.all.secure_redirects = 1 net.ipv4.conf.default.secure_redirects = 1,Not Compliance,High
+          4.2.4,Ensure suspicious packets are logged,Run sysctl net.ipv4.conf.all.log_martians|net.ipv4.conf.default.log_martians --> Verify value is '1',net.ipv4.conf.all.log_martians = 0 net.ipv4.conf.default.log_martians = 0,Not Compliance,High
+          4.2.5,Ensure broadcast ICMP requests are ignored,Run sysctl net.ipv4.icmp_echo_ignore_broadcasts --> Verify value is '1',net.ipv4.icmp_echo_ignore_broadcasts = 1,Compliance,High
+          4.2.6,Ensure bogus ICMP responses are ignored,Run sysctl net.ipv4.icmp_ignore_bogus_error_responses --> Verify value is '1',net.ipv4.icmp_ignore_bogus_error_responses = 1,Compliance,High
+          4.2.7,Ensure Reverse Path Filtering is enabled,Run sysctl net.ipv4.conf.all.rp_filter|net.ipv4.conf.default.rp_filter --> Verify value is '1',net.ipv4.conf.all.rp_filter = 0 net.ipv4.conf.default.rp_filter = 1,Not Compliance,High
+          4.2.8,Ensure TCP SYN Cookies is enabled,Run sysctl net.ipv4.tcp_syncookies --> Verify value is '1',net.ipv4.tcp_syncookies = 1,Compliance,High
+          4.3.1,Ensure IPv6 router advertisements are not accepted,Run sysctl net.ipv6.conf.all.accept_ra|net.ipv6.conf.default.accept_ra --> Verify value is '0',net.ipv6.conf.all.accept_ra = 1 net.ipv6.conf.default.accept_ra = 1,Not Compliance,High
+          4.3.2,Ensure IPv6 redirects are not accepted,Run sysctl net.ipv6.conf.all.accept_redirects|net.ipv6.conf.default.accept_redirects --> Verify value is '0',net.ipv6.conf.all.accept_redirects = 1 net.ipv6.conf.default.accept_redirects = 1,Not Compliance,High
+          4.3.3,Ensure IPv6 is disabled,verify output includes indicated line 'options ipv6 disable=1',NA,Not Required in Baseline Document,High
+          4.4.1,Ensure TCP Wrappers is installed,RUN rpm -q tcp_wrappers --> verify tcp_wrappers is installed,tcp_wrappers-7.6-57.el6.x86_64,Compliance,High
+          4.4.2,Ensure /etc/hosts.allow is configured,verify the contents of the /etc/hosts.allow,NA,Not Required in Baseline Document,High
+          4.4.3,Ensure /etc/hosts.deny is configured,verify the contents of the /etc/hosts.deny,NA,Not Required in Baseline Document,High
+          4.4.4,Ensure permissions on /etc/hosts.allow are configured,verify Uid and Gid are both 0/root and Access is 644,NA,Not Required in Baseline Document,High
+          4.4.5,Ensure permissions on /etc/hosts.deny are configured,verify Uid and Gid are both 0/root and Access is 644,NA,Not Required in Baseline Document,High
+          4.5.1,Ensure DCCP is disabled,Run lsmod|grep dccp --> No output,dccp is not enable,Compliance,High
+          4.5.2,Ensure SCTP is disabled,Run lsmod|grep sctp --> No output,sctp is not enable,Compliance,High
+          4.5.3,Ensure RDS is disabled,Run lsmod|grep rds --> No output,rds is not enable,Compliance,High
+          4.5.4,Ensure TIPC is disabled,Run lsmod|grep tipc --> No output,tipc is not enable,Compliance,High
+          4.6.1,Ensure iptables is installed,Run rpm -q iptables --> verify iptables is installed,iptables-1.4.7-11.el6.x86_64,Compliance,High
+          4.6.2,Ensure default deny firewall policy,verify that the policy for the INPUT OUTPUT and FORWARD chains is DROP or REJECT,NA,Not Required in Baseline Document,High
+          4.6.3,Ensure loopback traffic is configured,verify output includes the listed rules in order,NA,Not Required in Baseline Document,High
+          4.6.4,Ensure outbound and established connections are configured,verify all rules for new outbound and established connections match site policy,NA,Not Required in Baseline Document,High
+          4.6.5,Ensure firewall rules exist for all open ports,Verify all open ports listening on non-localhost addresses have at least one firewall rule,NA,Not Required in Baseline Document,High
+          4.7,Ensure wireless interfaces are disabled,verify wireless interfaces are active,NA,Not Required in Baseline Document,High
+          5.1.1.1,Ensure audit log storage size is configured,Ensure audit log storage size is in compliance with site policy,max_log_file is 10 MB,Manual Check,High
+          5.1.1.2,Ensure system is disabled when audit logs are full,Set the following parameters in /etc/audit/auditd.conf:space_left_action action_mail_acct admin_space_left_action,NA,Not Required in Baseline Document,High
+          5.1.1.3,Ensure audit logs are not automatically deleted,Check max_log_file_action configuration is 'keep_logs',max_log_file_action = ROTATE,Not Compliance,High
+          5.1.2,Ensure auditd service is enabled,Verify auditd runlevels 2-5 are listed as 'on',auditd 0:off 1:off 2:on 3:on 4:on 5:on 6:off,Compliance,High
+          5.1.3,Ensure auditing for processes that start prior to auditd is enabled,Verify each kernel line has the 'audit=1', kernel /vmlinuz-2.6.32-696.13.2.el6.x86_64 ro root=/dev/mapper/vg00-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto kernel /vmlinuz-2.6.32-696.6.3.el6.x86_64 ro root=/dev/mapper/vg00-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto kernel /vmlinuz-2.6.32-696.3.2.el6.x86_64 ro root=/dev/mapper/vg00-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto kernel /altvmlinuz-2.6.32-431.17.1.el6.x86_64 ro root=/dev/mapper/vg00alt-rootvol rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg00alt/rootvol rd_NO_MD SYSFONT=latarcyrheb-sun16 rd_LVM_LV=vg00/swapvol KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM elevator=deadline audit=1 crashkernel=auto,Compliance,High
+          5.1.7,Ensure events that modify the system's Mandatory Access Controls are collected,Verify output matches '-w /etc/selinux/ -p wa -k MAC-policy',Output is none or wrong ,Not Compliance,High
+          5.1.8,Ensure login and logout events are collected,Verify output matches '-w /var/log/lastlog -p wa -k logins' && '-w /var/run/faillock/ -p wa -k logins',Output is none or wrong,Not Compliance,High
+          5.1.9,Ensure session initiation information is collected,Verify output matches '-w /var/run/utmp -p wa -k session' && '-w /var/log/wtmp -p wa -k session' && '-w /var/log/btmp -p wa -k session',Output is none or wrong ,Not Compliance,High
+          5.2.1.1,Ensure rsyslog service is enabled,Verify rsyslog runlevels 2-5 are listed as 'on',rsyslog 0:off 1:off 2:on 3:on 4:on 5:on 6:off,Compliance,High
+          5.2.2.1,Ensure 'syslog-ng' service is enabled,"verify syslog-ng runlevels 2 through 5 are ""on""",NA,Not Required in Baseline Document,High
+          5.2.2.2,Ensure logging is configured,Review the contents of the '/etc/syslog-ng/syslog-ng.conf' file to ensure appropriate logging is set,NA,Not Required in Baseline Document,High
+          5.2.2.3,Ensure 'syslog-ng' default file permissions configured,verify the perm option is 0640 or more restrictive,NA,Not Required in Baseline Document,High
+          5.2.2.4,Ensure 'syslog-ng' is configured to send logs to a remote log host,verify that logs are sent to a central host,NA,Not Required in Baseline Document,High
+          5.2.2.5,Ensure remote syslog-ng messages are only accepted on designated log hosts,verify the following lines are configured appropriately on designated log hosts,NA,Not Required in Baseline Document,High
+          5.2.3,Ensure rsyslog is installed,Run rpm -q rsyslog --> verify rsyslog is installed,rsyslog-5.8.10-9.el6_6.x86_64,Compliance,High
+          5.2.4,Ensure permissions on all logfiles are configured,check /var/log/|verify 'other' has no any permissions and 'group' does not have write or execute permissions on any files,-rw-r--r--. root root /var/log/dmesg -rw-r--r--. root root /var/log/sudo.log -rw-r--r--. root root /var/log/alternate_boot.log-20141205.gz -rw-r--r--. root root /var/log/sa/sa09 -rw-r--r--. root root /var/log/sa/sa06 -rw-r--r--. root root /var/log/sa/sar2,Not Compliance,High
+          5.2.5,Ensure logrotate is configured,Review /etc/logrotate.conf and /etc/logrotate.d/* and verify logs are rotated according to 'SAICGMAC' policy,NA,Manual Check,High
+          6.1.1,Ensure crond service is enabled,Verify crond runlevels 2-5 are listed as 'on',crond 0:off 1:off 2:on 3:on 4:on 5:on 6:off,Compliance,High
+          6.1.2,Ensure permissions on /etc/crontab are configured,verify Uid and Gid are both root and Access does not grant permissions to group or other,-rw-r--r--. 1 root root 457 Jun 3 2011 /etc/crontab,Not Compliance,High
+          6.1.3,Ensure permissions on /etc/cron.hourly are configured,verify Uid and Gid are both root and Access does not grant permissions to group or other,total 4 -rwxr-xr-x. 1 root root 409 Sep 12 2013 0anacron,Not Compliance,High
+          6.1.4,Ensure permissions on /etc/cron.daily are configured,verify Uid and Gid are both root and Access does not grant permissions to group or other,total 32 -rwx------. 1 root root 118 Jun 11 2015 cups -rwxr-xr-x. 1 root root 292 Dec 2 2014 eds-ntpdate -rwxr-xr-x. 1 root root 196 May 28 2013 logrotate -rwxr-xr-x. 1 root root 905 Nov 17 2012 makewhatis.cron -rwxr-xr-x. 1 root root 174 Sep 24 2012 mlocate.cron -rwxr-xr-x. 1 root root 2126 Jul 19 2013 prelink -rwxr-xr-x. 1 root root 563 Oct 22 2013 readahead.cron -rwxr-xr-x. 1 root root 365 Oct 16 2009 tmpwatch,Not Compliance,High
+          6.1.5,Ensure permissions on /etc/cron.weekly are configured,verify Uid and Gid are both root and Access does not grant permissions to group or other,total 0,Compliance,High
+          6.1.6,Ensure permissions on /etc/cron.monthly are configured,verify Uid and Gid are both root and Access does not grant permissions to group or other,total 4 -rwxr-xr-x. 1 root root 111 Oct 22 2013 readahead-monthly.cron,Not Compliance,High
+          6.1.7,Ensure permissions on /etc/cron.d are configured,verify Uid and Gid are both root and Access does not grant permissions to group or other,total 20 -rw-r--r--. 1 root root 113 Sep 12 2013 0hourly -rw-r--r--. 1 root root 108 Apr 7 2014 raid-check -rw-r--r--. 1 root root 363 Jan 10 02:14 splx -rw-r--r--. 1 root root 77 Dec 11 15:37 splxbif -rw-r--r--. 1 root root 235 Sep 17 2013 sysstat,Not Compliance,High
+          6.1.8,Ensure at/cron is restricted to authorized users,/etc/cron.deny and /etc/at.deny do not exist && verify Uid and Gid are both 'root' and Access does not grant permissions to group or other for both /etc/cron.allow and /etc/at.allow,-rw-------. 1 root root 0 Sep 12 2013 /etc/cron.deny -rw-r--r--. 1 root root 1 Jan 20 2012 /etc/at.deny -rw-r--r--. 1 root root 5 Dec 2 2014 /etc/cron.allow -rw-r--r--. 1 root root 5 Dec 2 2014 /etc/at.allow,Not Compliance,High
+          6.2.1,Ensure permissions on /etc/ssh/sshd_config are configured,verify Uid and Gid are both 'root' and Access does not grant permissions to group or other,-rw-------. 1 root root 3969 Sep 20 13:52 /etc/ssh/sshd_config,Compliance,High
+          6.2.2,Ensure SSH Protocol is set to 2,verify /etc/ssh/sshd_config ssh version output matches 'Protocol = 2',Protocol 2,Compliance,High
+          6.2.3,Ensure SSH LogLevel is set to INFO,verify /etc/ssh/sshd_config output matches 'LogLevel = INFO',Loglevel configuration is not match policy...#LogLevel INFO,Not Compliance,High
+          6.2.4,Ensure SSH X11 forwarding is disabled,verify /etc/ssh/sshd_config output matches 'X11Forwarding = no',X11 forwarding configuration is not match policy...#X11Forwarding no X11Forwarding yes # X11Forwarding no,Not Compliance,High
+          6.2.5,Ensure SSH MaxAuthTries is set to 4 or less,verify /etc/ssh/sshd_config output matches 'MaxAuthTries = 4 or Less',SSH MaxAuthTries configuration is not match policy...#MaxAuthTries 6,Not Compliance,High
+          6.2.6,Ensure SSH IgnoreRhosts is enabled,verify /etc/ssh/sshd_config output matches 'IgnoreRhosts = yes',SSH IgnoreRhosts configuration is not match policy...#IgnoreRhosts yes,Not Compliance,High
+          6.2.7,Ensure SSH HostbasedAuthentication is disabled,verify /etc/ssh/sshd_config output matches 'HostbasedAuthentication = no',SSH HostbasedAuthentication configuration is not match policy...#HostbasedAuthentication no # RhostsRSAAuthentication and HostbasedAuthentication,Not Compliance,High
+          6.2.8,Ensure SSH root login is disabled,verify /etc/ssh/sshd_config output matches 'PermitRootLogin = no',"SSH PermitRootLogin configuration is not match policy...#PermitRootLogin yes # the setting of ""PermitRootLogin without-password"".",Not Compliance,High
+          6.2.9,Ensure SSH PermitEmptyPasswords is disabled,verify /etc/ssh/sshd_config output matches 'PermitEmptyPasswords = no',SSH PermitEmptyPasswords configuration is not match policy...,Not Compliance,High
+          6.2.10,Ensure SSH PermitUserEnvironment is disabled,verify /etc/ssh/sshd_config output matches 'PermitUserEnvironment = no',SSH PermitUserEnvironment configuration is not match policy...,Not Compliance,High
+          6.2.13,Ensure SSH Idle Timeout Interval is configured,verify /etc/ssh/sshd_config output matches 'ClientAliveInterval = 300 or less && ClientAliveCountMax = 3 or less',SSH ClientAliveInterval and ClientAliveCountMax configuration is not match policy...#ClientAliveInterval 0 #ClientAliveCountMax 3,Not Compliance,High
+          6.2.14,Ensure SSH LoginGraceTime is set to 60 or less,verify /etc/ssh/sshd_config that LoginGraceTime = 60 or less,SSH LoginGraceTime configuration is not match policy...#LoginGraceTime 2m,Not Compliance,High
+          6.2.16,Ensure SSH warning banner is configured,verify /etc/ssh/sshd_config output matches 'Banner /etc/issue.net',SSH warning banner configuration is not match policy...Banner /etc/issue,Not Compliance,High
+          6.3.1,Ensure password creation requirements are configured,verify all password requirements are as listed:password requisite pam_cracklib.so try_first_pass retry=3 minlen=14 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1,password requisite pam_cracklib.so try_first_pass retry=3 type= minlen=8 lcredit=-1 ucredit=-1 dcredit=-1 difok=3 maxrepeat=2 passwrd requisite pam_cracklib.so try_fisrt_pass retry=3 type= minlen=8 dcredit=-1 ocredit=-1 lcredit=-1 ucredit=-1 difok=3 maxrepeat=2,Not Compliance,High
+          6.3.2,Ensure lockout for failed password attempts is configured,verify output:auth required pam_faillock.so preauth audit silent deny=5 unlock_time=900|auth [default=die] pam_faillock.so authfail audit deny=5 unlock_time=900|auth [success=1 default=bad] pam_unix.so|auth sufficient pam_faillock.so authsucc audit deny=5 unlock_time=900,auth sufficient pam_unix.so try_first_pass account required pam_unix.so password sufficient pam_unix.so sha512 shadow try_first_pass use_authtok remember=6 session required pam_unix.so auth sufficient pam_unix.so try_first_pass account required pam_unix.so password sufficient pam_unix.so sha512 shadow try_first_pass use_authtok remember=6 session required pam_unix.so,Not Compliance,High
+          6.3.4,Ensure password hashing algorithm is SHA-512,ensure the 'sha512' option is included,password sufficient pam_unix.so sha512 shadow try_first_pass use_authtok remember=6 password sufficient pam_unix.so sha512 shadow try_first_pass use_authtok remember=6,Compliance,High
+          6.4.1.1,Ensure password expiration is 90 days or less,verify PASS_MAX_DAYS = 90 or less,PASS_MAX_DAYS 90,Compliance,High
+          6.4.1.2,Ensure minimum days between password changes is 2 or more,verify PASS_MIN_DAYS = 2 or more,PASS_MIN_DAYS 2,Compliance,High
+          6.4.1.3,Ensure password expiration warning days is 7 or more,verify PASS_WARN_AGE = 7 or more,PASS_WARN_AGE 7,Compliance,High
+          6.4.1.4,Ensure inactive password lock is 30 days or less,verify INACTIVE = 30 or less,INACTIVE configuration is not match policy...INACTIVE=180,Not Compliance,High
+          6.4.3,Ensure default group for the root account is GID 0,verify the root account GID is '0',root:x:0:0:root:/root:/bin/bash,Compliance,High
+          6.4.3,Ensure default user umask is 027 or more restrictive,verify the UMASK are 027 or more restrictive,System UMASK is:0022,Not Compliance,High
+          6.5,Ensure root login is restricted to system console,Remove entries for any consoles that are not in a physically secure location,console vc/1 vc/2 vc/3 vc/4 vc/5 vc/6 vc/7 vc/8 vc/9 vc/10 vc/11 tty1 tty2 tty3 tty4 tty5 tty6 tty7 tty8 tty9 tty10 tty11,Manual Check,High
+          6.6,Ensure access to the su command is restricted,verify output includes matching line:auth required pam_wheel.so use_uid,#auth sufficient pam_wheel.so trust use_uid #auth required pam_wheel.so use_uid,Not Compliance,High
+
+    - name: copy csv file back
+      fetch:
+        src: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv"
+        dest: "{{ csv_bash_path }}/{{ awx_job_id }}/"
+        fail_on_missing: yes
+        flat: yes

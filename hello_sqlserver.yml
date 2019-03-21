@@ -1,0 +1,51 @@
+- name: CSV File Sample
+  hosts: all
+  vars:
+   csv_bash_path: "/var/lib/itam/dailycheck"
+   csv_temp_path: "/tmp/itam/dailycheck"
+  tasks:
+    - name: Hello SQL Server and CSV
+      debug:
+        msg: "Hello sqlserver!"
+
+    - name: create directory for csv
+      file:
+        path: "{{ csv_temp_path }}/{{ awx_job_id }}"
+        state: directory
+
+    - name: create csv file for test
+      file:
+        path: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv"
+        state: touch
+
+    - name: create some test data
+      shell: |
+        cat > "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv" << EOF
+        Application,InstanceName,Databases,DBFiles(LackOfSapce/Total),FullBackup(Failed/Total),TransBackup(Failed/Total),IntegrityCheck(Failed/Total),IndexReorganize(Failed/Total),ErrorLogHandled
+        CallCenter-Prod,CNSD1CICHPADB01,11,0|22,0|4,0|2,0|4,0|2,0
+        CallCenter-UAT,CNSD2CICHMACW04,10,0|20,0|2,0|0,0|1,0|0,0
+        CARRS-DR,CNSD2SDBCARM001,5,0|16,0|2,0|0,0|2,0|0,0
+        CARRS-PROD,CNSD1SDBCAPM001,11,0|31,0|0,0|0,0|0,0|0,0
+        CARRS-UAT,CNSD2SDBCADM001,10,0|22,0|2,0|2,0|2,0|0,0
+        HRIS-PROD,CNSHASA0GINT01\GMACSICHRIS,11,0|22,0|4,0|0,0|4,0|0,0
+        LAN Localization,CNSD1SAPCPM004\NCMROD,6,0|12,0|1,0|1,0|1,0|0,0
+        MBP-Prod,CNSHASDBCPM001,17,0|34,0|4,0|2,0|4,0|0,0
+        NC-Prod,CNSHASA0GINT02,16,0|64,0|4,0|2,0|4,0|0,0
+        NC-UAT,CNSHISAPCPM002,6,0|27,0|0,0|0,0|0,0|0,0
+        SCCM-Prod,CNSD1SSSCPM001,8,0|16,0|4,0|2,0|4,0|0,0
+        TREMA-PROD,CNSD1SAPCPM001\TREMAPROD,5,0|10,0|1,0|0,0|2,0|0,0
+        TREMA-UAT,CNSD2SAPCRM001\TREMADR,5,0|10,0|4,0|2,0|4,0|0,0
+        VCenter-Prod,CNSD1SDBCPM003,8,0|16,0|4,0|2,0|4,0|0,0
+        VCenter-UAT,CNSD2SDBCPM003,1,0|2,0|4,0|2,0|4,0|0,0
+        VoiceRecord-Prod,CNSD1TMSCIPM001,6,0|12,0|2,0|2,0|2,0|0,0
+        VoiceRecord-UAT,CNSD1TMSCIPM002,6,0|12,0|2,0|2,0|2,0|0,0
+        WSCP-DR,CNSD2SAPCRM003\WSCPPROD,4,0|8,0|2,0|2,0|3,0|0,0
+        WSCP-PROD,CNSD1SAPCPM003\WSCPPROD,5,0|10,0|2,0|2,0|3,0|0,0
+        WSCP-UAT,CNSD2SAPCRM004\WSCPUAT,5,0|10,0|2,0|2,0|4,0|0,0
+
+    - name: copy csv file back
+      fetch:
+        src: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.csv"
+        dest: "{{ csv_bash_path }}/{{ awx_job_id }}/"
+        fail_on_missing: yes
+        flat: yes

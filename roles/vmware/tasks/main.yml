@@ -1,0 +1,22 @@
+--- 
+
+- name: Hello vmware and xls 
+  debug:
+    msg: "Hello vmware!"
+
+- name: create directory for csv
+  file:
+    path: "{{ csv_temp_path }}/{{ awx_job_id }}"
+    state: directory
+
+- name: create some test data
+  copy:
+    src: files/vmware_script_result_example.xlsx
+    dest: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.xlsx"
+      
+- name: copy csv file back
+  fetch:
+    src: "{{ csv_temp_path }}/{{ awx_job_id }}/{{ host_id }}.xlsx"
+    dest: "{{ csv_bash_path }}/{{ awx_job_id }}/"
+    fail_on_missing: yes
+    flat: yes
